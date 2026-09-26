@@ -1,7 +1,8 @@
+#include <raylib.h>
+
 #include "Application.h"
 
 #include <print>
-
 namespace Core
 {
 
@@ -18,11 +19,22 @@ namespace Core
     void Application::Run()
     {
         Init();
-        while (m_Running)
+
+        while (!WindowShouldClose())
         {
+            BeginDrawing();
+            ClearBackground(BLACK);
+
+            DrawText("Hello, world!", 500, 500, 16, WHITE);
+
             for (auto& layer: m_LayerStack)
             {
-                layer->OnUpdate(5);
+                layer->OnUpdate(GetFrameTime());
+            }
+
+            for (auto& layer: m_LayerStack)
+            {
+                layer->OnUIRender();
             }
 
             for (auto& layer: m_LayerStack)
@@ -30,7 +42,7 @@ namespace Core
                 layer->OnRender();
             }
 
-            m_Running = false;
+            EndDrawing();
         }
         
         Shutdown();
@@ -39,6 +51,10 @@ namespace Core
     void Application::Init()
     {
         std::println("Initializing stuff ...");
+
+        InitWindow(1280, 720, "OLC Code Jam 2026");
+
+        SetTargetFPS(60);
     }
 
     void Application::Shutdown()
@@ -49,6 +65,8 @@ namespace Core
         {
             layer->OnDetach();
         }
+
+        CloseWindow();
     }
 
 }

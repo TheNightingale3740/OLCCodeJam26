@@ -1,13 +1,10 @@
 #include <Application.h>
 
-#include <memory>
-#include <print>
-
-//#include <raylib.h>
-
-// #ifdef PLATFORM_WEB
-//     #include <emcripten/emscripten.h>
-// #endif
+// cd ~/Documents/Dev/emsdk
+// source ./emsdk_env.sh
+// cd ~/Documents/Dev/OLCCodeJam26
+// make config=web CC=emcc CXX=em++ AR=emar
+// emrun bin/Web/App.html
 
 class ExampleLayer : public Core::Layer
 {
@@ -24,7 +21,7 @@ public:
 
     void OnRender() override
     {
-        std::println("I am rendering stuff ...");
+
     }
 };
 

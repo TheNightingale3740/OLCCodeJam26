@@ -31,8 +31,6 @@ namespace Core
         void Shutdown();
     private:
         std::vector<std::unique_ptr<Layer>> m_LayerStack;
-        
-        bool m_Running = true;
     };
 
     extern std::unique_ptr<Application> CreateApplication();
