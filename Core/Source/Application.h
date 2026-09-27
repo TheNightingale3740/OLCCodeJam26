@@ -27,6 +27,8 @@ namespace Core
 
         void Run();
 
+        void MainLoop();
+
         void Init();
         void Shutdown();
     private:

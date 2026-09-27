@@ -1,8 +1,8 @@
 #include <Application.h>
 
-// cd ~/Documents/Dev/emsdk
-// source ./emsdk_env.sh
-// cd ~/Documents/Dev/OLCCodeJam26
+#include <imgui.h>
+
+// cd ~/Documents/Dev/emsdk && source ./emsdk_env.sh && cd ~/Documents/Dev/OLCCodeJam26
 // make config=web CC=emcc CXX=em++ AR=emar
 // emrun bin/Web/App.html
 
@@ -19,9 +19,11 @@ public:
 
     }
 
-    void OnRender() override
+    void OnUIRender() override
     {
-
+        ImGui::Begin("Hello, Window!");
+        ImGui::Text("Hello, Text");
+        ImGui::End();
     }
 };
 

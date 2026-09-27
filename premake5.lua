@@ -12,18 +12,30 @@ project "Core"
     files
     {
         "Core/Source/**.cpp",
-        "Core/Source/**.h"
+        "Core/Source/**.h",
+        "Core/Vendor/imgui/imgui.cpp",
+        "Core/Vendor/imgui/imgui_demo.cpp",
+        "Core/Vendor/imgui/imgui_tables.cpp",
+        "Core/Vendor/imgui/imgui_widgets.cpp",
+        "Core/Vendor/imgui/imgui_draw.cpp",
+        "Core/Vendor/imgui/backends/imgui_impl_opengl3.cpp",
+
+        "Core/Vendor/imgui-rl/rlImGui.cpp"
     }
 
     filter "configurations:Debug or Release or Dist"
-        includedirs { "Core/Vendor/Raylib/raylib-6.0_macOS/include" }
+        includedirs { "Core/Vendor/Raylib/raylib-6.0_macOS/include", "Core/Vendor/imgui", "Core/Vendor/imgui-rl" }
         libdirs     { "Core/Vendor/Raylib/raylib-6.0_macOS/lib" }
         links       { "raylib" }
 
     filter "configurations:Web"
-        includedirs { "Core/Vendor/Raylib/raylib-6.0_webassembly/include" }
+        includedirs { "Core/Vendor/Raylib/raylib-6.0_webassembly/include", "Core/Vendor/imgui", "Core/Vendor/imgui-rl" }
         toolset "clang"
         gccprefix "em"
+
+        symbols "Off"
+        optimize "Full"
+
         defines { "PLATFORM_WEB" }
 
 project "App"
@@ -37,11 +49,11 @@ project "App"
         "App/Source/**.h"
     }
 
-    includedirs { "Core/Source" }
+    includedirs { "Core/Source", "Core/Vendor/imgui", "Core/Vendor/imgui-rl" }
     links { "Core" }
 
     filter "configurations:Debug or Release or Dist"
-        includedirs { "Core/Vendor/Raylib/raylib-6.0_macOS/include" }
+        includedirs { "Core/Vendor/Raylib/raylib-6.0_macOS/include", "Core/Vendor/imgui", "Core/Vendor/imgui-rl" }
         libdirs     { "Core/Vendor/Raylib/raylib-6.0_macOS/lib" }
         links       { "raylib" }
 
@@ -56,7 +68,11 @@ project "App"
         toolset "clang"
         gccprefix "em"
         targetextension ".html"
-        includedirs { "Core/Vendor/Raylib/raylib-6.0_webassembly/include" }
+
+        symbols "Off"
+        optimize "Full"
+
+        includedirs { "Core/Vendor/Raylib/raylib-6.0_webassembly/include", "Core/Vendor/imgui", "Core/Vendor/imgui-rl" }
         libdirs     { "Core/Vendor/Raylib/raylib-6.0_webassembly/lib" }
         links       { "raylib.web" }
         linkoptions
