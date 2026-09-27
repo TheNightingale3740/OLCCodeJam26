@@ -3,8 +3,6 @@
 
 #include "Application.h"
 
-#include <print>
-
 #ifdef PLATFORM_WEB
 #include <emscripten/emscripten.h>
 #endif
@@ -20,6 +18,11 @@ namespace Core
         {
             s_Application->MainLoop();
         }
+    }
+
+    Application& Application::Get()
+    {
+        return *s_Application;
     }
 
     void Application::MainLoop()

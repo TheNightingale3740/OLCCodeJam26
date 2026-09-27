@@ -1,19 +1,21 @@
 #pragma once
 
-#include "Layer.h"
-
 #include <concepts>
 #include <memory>
 #include <vector>
 
+#include "Layer.h"
+
 namespace Core
 {
-
     class Application
     {
+        friend class Layer;
     public:
         Application();
         ~Application();
+
+        static Application& Get();
 
         template <typename TLayer>
         requires std::derived_from<TLayer, Layer>
