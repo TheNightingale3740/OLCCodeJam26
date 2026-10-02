@@ -3,10 +3,6 @@
 
 #include "Application.h"
 
-#ifdef PLATFORM_WEB
-#include <emscripten/emscripten.h>
-#endif
-
 namespace Core
 {
 
@@ -29,18 +25,20 @@ namespace Core
     {
         BeginDrawing();
         ClearBackground(BLACK);
-        DrawText("Hello, world!", 500, 500, 16, WHITE);
 
         for (auto& layer: m_LayerStack)
             layer->OnUpdate(GetFrameTime());
 
-        rlImGuiBegin();
-        for (auto& layer: m_LayerStack)
-            layer->OnUIRender();
-        rlImGuiEnd();
-
+        
         for (auto& layer: m_LayerStack)
             layer->OnRender();
+        
+        rlImGuiBegin();
+        
+        for (auto& layer: m_LayerStack)
+            layer->OnUIRender();
+        
+        rlImGuiEnd();
 
         EndDrawing();
     }
@@ -78,6 +76,12 @@ namespace Core
         SetTargetFPS(60);
 
         rlImGuiSetup(true);
+
+        ChangeDirectory(GetApplicationDirectory());
+
+        #ifndef PLATFORM_WEB
+        SetWindowState(FLAG_FULLSCREEN_MODE);
+        #endif
     }
 
     void Application::Shutdown()

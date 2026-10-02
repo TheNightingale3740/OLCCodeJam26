@@ -1,7 +1,7 @@
 workspace "OLCCodeJam26"
-    configurations { "Debug", "Release", "Dist", "Web" }
-    
-    filter "configurations:Debug or Release or Dist"
+    configurations { "Debug", "Release", "Dist" }
+
+    filter "system:macosx"
         architecture "arm64"
 
 project "Core"
@@ -28,20 +28,12 @@ project "Core"
         libdirs     { "Core/Vendor/Raylib/raylib-6.0_macOS/lib" }
         links       { "raylib" }
 
-    filter "configurations:Web"
-        includedirs { "Core/Vendor/Raylib/raylib-6.0_webassembly/include", "Core/Vendor/imgui", "Core/Vendor/imgui-rl" }
-        toolset "clang"
-        gccprefix "em"
-
-        symbols "Off"
-        optimize "Full"
-
-        defines { "PLATFORM_WEB" }
-
 project "App"
     kind "ConsoleApp"
     language "C++"
     cppdialect "C++23"
+
+    targetdir "bin/%{cfg.buildcfg}"
 
     files
     {
@@ -49,7 +41,7 @@ project "App"
         "App/Source/**.h"
     }
 
-    includedirs { "Core/Source", "Core/Vendor/imgui", "Core/Vendor/imgui-rl" }
+    includedirs { "Core/Source", "Core/Vendor/imgui", "Core/Vendor/imgui-rl", "App/Assets" }
     links { "Core" }
 
     filter "configurations:Debug or Release or Dist"
@@ -57,28 +49,11 @@ project "App"
         libdirs     { "Core/Vendor/Raylib/raylib-6.0_macOS/lib" }
         links       { "raylib" }
 
-    filter { "system:macosx", "configurations:not Web" }
+    filter "system:macosx"
         links
         {
             "OpenGL.framework", "Cocoa.framework", "IOKit.framework",
             "CoreVideo.framework", "QuartzCore.framework"
         }
 
-    filter "configurations:Web"
-        toolset "clang"
-        gccprefix "em"
-        targetextension ".html"
-
-        symbols "Off"
-        optimize "Full"
-
-        includedirs { "Core/Vendor/Raylib/raylib-6.0_webassembly/include", "Core/Vendor/imgui", "Core/Vendor/imgui-rl" }
-        libdirs     { "Core/Vendor/Raylib/raylib-6.0_webassembly/lib" }
-        links       { "raylib.web" }
-        linkoptions
-        {
-            "-sUSE_GLFW=3",
-            "-sASYNCIFY",
-            "-sALLOW_MEMORY_GROWTH=1"
-        }
-        defines { "PLATFORM_WEB" }
+    postbuildcommands { "{COPYDIR} %{wks.location}/App/Assets %{cfg.targetdir}" }
