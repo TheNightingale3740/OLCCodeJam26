@@ -9,8 +9,6 @@
 
 #include <imgui.h>
 
-#include <print>
-
 class Player
 {
 public:
@@ -20,15 +18,15 @@ public:
     ~Player()
     {}
 
-    void Init(Mesh mesh)
+    void Init(Model *model)
     {
         m_MainCamera.position = { 5.0f, 5.0f, 5.0f };
         m_MainCamera.up = { 0.0f, 1.0f, 0.0f };
         m_MainCamera.target = { 0.0f, 0.0f, 0.0f };
-        m_MainCamera.fovy = 45.0f;
+        m_MainCamera.fovy = 70.0f;
         m_MainCamera.projection = CAMERA_PERSPECTIVE;
 
-        m_LevelMesh = mesh;
+        m_CollisionGeometry = model;
     }
 
     void OnUIRender()
@@ -41,31 +39,69 @@ public:
         Vector3 lastTarget = m_MainCamera.target;
         
         UpdateCamera(&m_MainCamera, CAMERA_FIRST_PERSON);
+        UpdateVertical(ts);
         
         Vector3 newPos = m_MainCamera.position;
         Vector3 displacement = newPos - lastPos;
 
-        if (displacement != Vector3Zero())
+        if (Vector3Length(displacement) >= 0.0001f)
         {
             Ray r;
             r.position = lastPos;
             r.direction = Vector3Normalize(displacement);
 
-            RayCollision payload = GetRayCollisionMesh(r, m_LevelMesh, MatrixIdentity());
-            if (payload.distance < 1.0f) // Player Radius
+            for (int i = 0; i < m_CollisionGeometry->meshCount; i++)
             {
-                // Collission Detected!
-                m_MainCamera.position = m_MainCamera.position - displacement; // Revert!
-                m_MainCamera.target = lastTarget;
+                RayCollision payload = GetRayCollisionMesh(r, m_CollisionGeometry->meshes[i], MatrixIdentity());
+                if (payload.hit && payload.distance < 1.0f) // Player Radius
+                {
+                    // Collission Detected!
+                    m_MainCamera.position = m_MainCamera.position - displacement;
+                    m_MainCamera.target = lastTarget;
+
+                    break;
+                }
             }
         }
+    }
+
+    void UpdateVertical(float ts)
+    {
+        Ray r;
+        r.position = m_MainCamera.position;
+        r.direction = Vector3Normalize(Vector3(0.0f, -1.0f, 0.0f)); // Trust issues
+
+        bool isGrounded = false;
+
+        for (int i = 0; i < m_CollisionGeometry->meshCount; i++)
+        {
+            RayCollision payload = GetRayCollisionMesh(r, m_CollisionGeometry->meshes[i], MatrixIdentity());
+            if (payload.hit && payload.distance <= 5.0f) // Player Height
+            {
+                // Player Grounded
+                isGrounded = true;
+            }
+        }
+
+        if (isGrounded)
+        {
+            m_VelocityY = 0.0f;
+            return;
+        }
+
+        // Player is falling apply gravity
+        m_VelocityY += m_Gravity * ts;
+        m_MainCamera.position.y += m_VelocityY * ts;
     }
 
     Camera3D GetMainCamera() const { return m_MainCamera; }
 
 private:
     Camera3D m_MainCamera;
-    Mesh m_LevelMesh;
+    Model* m_CollisionGeometry;
+
+    float m_VelocityY = 0.0f;
+    float m_Gravity = -9.8f;
 };
 
 class GameState : public Core::Layer
@@ -77,7 +113,7 @@ public:
 
         LoadResources();
 
-        m_Player.Init(m_LevelGeometry.meshes[0]); // There is only one mesh in the level as of right now
+        m_Player.Init(&m_LevelGeometry);
     }
 
     ~GameState()
@@ -124,7 +160,7 @@ private:
 
     Model LoadMesh(std::filesystem::path path) const
     {
-        Model model = LoadModel(path.c_str());
+        Model model = LoadModel(path.string().c_str()); // Because .... reasons -_-
 
         for (int i = 0; i < model.materialCount; i++)
         {

@@ -6,10 +6,6 @@
 
 #include "MainMenu.h"
 
-// cd ~/Documents/Dev/emsdk && source ./emsdk_env.sh && cd ~/Documents/Dev/OLCCodeJam26
-// make config=web CC=emcc CXX=em++ AR=emar -sMIN_WEBGL_VERSION=2 -sMAX_WEBGL_VERSION=2 -j8
-// emrun bin/Web/App.html
-
 class DebugOverlay : public Core::Layer
 {
 public:

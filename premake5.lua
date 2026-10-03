@@ -1,8 +1,30 @@
+local raylibDir = "Core/Vendor/Raylib/raylib-6.0_macOS"
+if os.target() == "windows" then
+    raylibDir = "Core/Vendor/Raylib/raylib-6.0_win64_msvc16"
+end
+
 workspace "OLCCodeJam26"
     configurations { "Debug", "Release", "Dist" }
+    startproject "App"
 
     filter "system:macosx"
         architecture "arm64"
+    filter "system:not macosx"
+        architecture "x64"
+    filter "system:windows"
+        systemversion "latest"
+    filter "configurations:Debug"
+        defines { "DEBUG" }
+        symbols "On"
+        optimize "Off"
+    filter "configurations:Release"
+        defines { "NDEBUG" }
+        optimize "On"
+    filter "configurations:Dist"
+        defines { "NDEBUG", "DIST" }
+        optimize "Full"
+        symbols "Off"
+    filter {}
 
 project "Core"
     kind "StaticLib"
@@ -23,10 +45,13 @@ project "Core"
         "Core/Vendor/imgui-rl/rlImGui.cpp"
     }
 
-    filter "configurations:Debug or Release or Dist"
-        includedirs { "Core/Vendor/Raylib/raylib-6.0_macOS/include", "Core/Vendor/imgui", "Core/Vendor/imgui-rl" }
-        libdirs     { "Core/Vendor/Raylib/raylib-6.0_macOS/lib" }
-        links       { "raylib" }
+    includedirs
+    {
+        "Core/Source",
+        raylibDir .. "/include",
+        "Core/Vendor/imgui",
+        "Core/Vendor/imgui-rl"
+    }
 
 project "App"
     kind "ConsoleApp"
@@ -34,6 +59,7 @@ project "App"
     cppdialect "C++23"
 
     targetdir "bin/%{cfg.buildcfg}"
+    debugdir  "%{cfg.targetdir}"
 
     files
     {
@@ -41,13 +67,17 @@ project "App"
         "App/Source/**.h"
     }
 
-    includedirs { "Core/Source", "Core/Vendor/imgui", "Core/Vendor/imgui-rl", "App/Assets" }
-    links { "Core" }
+    includedirs
+    {
+        "Core/Source",
+        raylibDir .. "/include",
+        "Core/Vendor/imgui",
+        "Core/Vendor/imgui-rl",
+        "App/Assets"
+    }
 
-    filter "configurations:Debug or Release or Dist"
-        includedirs { "Core/Vendor/Raylib/raylib-6.0_macOS/include", "Core/Vendor/imgui", "Core/Vendor/imgui-rl" }
-        libdirs     { "Core/Vendor/Raylib/raylib-6.0_macOS/lib" }
-        links       { "raylib" }
+    libdirs { raylibDir .. "/lib" }
+    links { "Core", "raylib" }
 
     filter "system:macosx"
         links
@@ -55,5 +85,8 @@ project "App"
             "OpenGL.framework", "Cocoa.framework", "IOKit.framework",
             "CoreVideo.framework", "QuartzCore.framework"
         }
+    filter "system:windows"
+        links { "opengl32", "gdi32", "winmm", "user32", "shell32" }
+    filter {}
 
     postbuildcommands { "{COPYDIR} %{wks.location}/App/Assets %{cfg.targetdir}" }
